@@ -8,6 +8,9 @@ import (
 	"os"
 	"os/signal"
 	"subcalc/internal/config"
+	"subcalc/internal/delivery/handlers"
+	gormrepo "subcalc/internal/repository/gorm"
+	"subcalc/internal/usecase"
 	"syscall"
 	"time"
 
@@ -46,6 +49,12 @@ func (s *Server) Run() error {
 	rawLogger := s.log.Desugar()
 	r.Use(ZapRequestLogger(rawLogger))
 	r.Use(gin.Recovery())
+
+	repo := gormrepo.NewGormSubscriptionRepo(s.db)
+	uc := usecase.NewSubscriptionUsecase(repo)
+	h := handlers.NewHandler(uc, s.log)
+
+	h.RegisterRoutes(r)
 
 	r.StaticFile("/swagger/doc.json", "/docs/swagger.json")
 
