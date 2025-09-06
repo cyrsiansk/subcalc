@@ -8,9 +8,8 @@ import (
 	"log"
 	"subcalc/internal/config"
 	"subcalc/internal/infrastructure/db"
+	"subcalc/internal/infrastructure/server"
 	loggerpkg "subcalc/internal/logger"
-
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -51,6 +50,8 @@ func main() {
 
 	// APP
 
-	sugar.Info("config loaded", zap.Any("config", cfg))
-	sugar.Info("service started")
+	s := server.NewServer(cfg, database, sugar)
+	if err := s.Run(); err != nil {
+		sugar.Fatalf("server stopped with error: %v", err)
+	}
 }
